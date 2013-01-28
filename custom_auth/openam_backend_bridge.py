@@ -57,7 +57,12 @@ class rest_interface:
         return self._do_get(CMD_ATTRIBUTES, {'subjectid': subject_id})
 
     def is_token_valid(self, token_id):
-        return self._do_get(CMD_IS_TOKEN_VALID, {'tokenid':token_id})
+        is_valid = False
+        try:
+            is_valid = 'boolean=true' in self._do_get(CMD_IS_TOKEN_VALID, {'tokenid':token_id})
+        except:
+            pass
+        return is_valid
 
     def do_authorization(self,uri, action, subject_id):
         return self._do_get(CMD_AUTHORIZATION, {'uri':uri, 'action':action, 'subjectid':subject_id})

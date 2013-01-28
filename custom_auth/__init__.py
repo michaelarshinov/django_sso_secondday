@@ -9,7 +9,7 @@ user_logged_in = Signal(providing_args=['request', 'user'])
 ssouser_logged_in = Signal(providing_args=['request', 'ssouser'])
 user_logged_out = Signal(providing_args=['request', 'user'])
 
-open_am_server_url = 'http://localhost:8080/openam_10.0.1/'
+OPEN_AM_SERVER_URL = 'http://localhost:8080/openam_10.0.1/'
 
 SESSION_KEY = '_auth_user_id'
 BACKEND_SESSION_KEY = '_auth_user_backend'
@@ -26,7 +26,7 @@ def auth_login(request, user):
     the anonymous session is retained when the user logs in.
     """
 
-    ri = rest_interface(opensso_url=open_am_server_url)
+    ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
     #token_logged_in = ri.do_login('messi', 'password')
     token_logged_in = ri.do_login(request.REQUEST.get('username'),request.REQUEST.get('password'))
@@ -86,14 +86,12 @@ def auth_logout(request):
         from django.contrib.auth.models import AnonymousUser
         request.user = AnonymousUser()
 
-    ri = rest_interface(opensso_url=open_am_server_url)
+    ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
     if OPENAM_COOKIE_NAME_FOR_TOKEN in request.COOKIES:
     #    ri.do_logout(subject_id=OPENAM_COOKIE_NAME_FOR_TOKEN)
     #if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN)
         ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
-
-
     ssouser = SSOUser(False)
     request.ssouser = ssouser

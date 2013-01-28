@@ -9,6 +9,8 @@ from django.shortcuts import render_to_response
 #http://stackoverflow.com/questions/9825630/login-required-decorator-in-django-1-1-and-template-name
 
 #@login_required(redirect_field_name='my_redirect_field')
+
+
 @login_required
 def garbage_stat_info(request):
     template = loader.get_template('stat_info.html')

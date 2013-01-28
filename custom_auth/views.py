@@ -10,9 +10,9 @@ from custom_auth import REDIRECT_FIELD_NAME, auth_login, auth_logout
 from django.template.response import TemplateResponse
 from django.contrib.sites.models import get_current_site
 from django.utils.http import base36_to_int, is_safe_url
-
+from custom_auth.openam_backend_bridge import rest_interface
 from django.core import urlresolvers
-
+from . import OPEN_AM_SERVER_URL
 from openam_backend_bridge import SSOUser
 import custom_auth
 
@@ -42,7 +42,6 @@ def login(request, template_name='registration/login.html',
                 redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
                 #print('!!!!!!!!!! USER  '*20)
 
-
             #return HttpResponseRedirect('/mainmenu_POST/')
             print('logn===='+redirect_to+'======login')
             response = HttpResponseRedirect(redirect_to)
@@ -55,7 +54,15 @@ def login(request, template_name='registration/login.html',
 
     current_site = get_current_site(request)
 
-    request.ssouser = SSOUser(True)
+    # place to check 'djnago_sso_secondday_token_id' and set 'ssouser' in case of need
+    # request.ssouser = SSOUser(True)
+
+    can_be_redirected = read_token_from_cookie_then_check_and_fill_out_ssouser_object(request)
+
+    if can_be_redirected and bool(can_be_redirected):
+        return HttpResponseRedirect(redirect_to)
+        #template_name = 'mainmenu.html'
+
 
     context = {
         'form': form,
@@ -63,8 +70,18 @@ def login(request, template_name='registration/login.html',
         'site': current_site,
         'site_name': current_site.name,
         }
+
+    if extra_context is not None:
+        context.update(extra_context)
     return TemplateResponse(request, template_name, context,
         current_app=current_app)
+
+def read_token_from_cookie_then_check_and_fill_out_ssouser_object(request):
+    token = request.COOKIES.get(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, None)
+    ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
+    authorized = ri.is_token_valid(token)
+    request.ssouser =  SSOUser(authorized)
+    return authorized
 
 def logout(request, next_page=None,
            template_name='registration/logged_out.html',
