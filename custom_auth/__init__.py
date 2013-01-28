@@ -2,9 +2,11 @@ __author__ = 'marshynov'
 
 from django.dispatch import Signal
 from custom_auth.openam_backend_bridge import rest_interface
+from openam_backend_bridge import SSOUser
 
 user_login_failed = Signal(providing_args=['credentials'])
 user_logged_in = Signal(providing_args=['request', 'user'])
+ssouser_logged_in = Signal(providing_args=['request', 'ssouser'])
 user_logged_out = Signal(providing_args=['request', 'user'])
 
 open_am_server_url = 'http://localhost:8080/openam_10.0.1/'
@@ -26,8 +28,14 @@ def auth_login(request, user):
 
     ri = rest_interface(opensso_url=open_am_server_url)
 
-    print(str(user)+'|')
-    token_logged_in = ri.do_login('messi', 'password')
+    #token_logged_in = ri.do_login('messi', 'password')
+    token_logged_in = ri.do_login(request.REQUEST.get('username'),request.REQUEST.get('password'))
+
+    if (ri.isErrorable(token_logged_in)):
+        if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN):
+            del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
+        return None
+
     token_logged_in = ri.clear_token(token_logged_in)
     if user is None:
         user = request.user
@@ -40,12 +48,19 @@ def auth_login(request, user):
             request.session.flush()
     else:
         request.session.cycle_key()
-    request.session[SESSION_KEY] = user.pk
-    request.session[BACKEND_SESSION_KEY] = user.backend
+    #######################################request.session[SESSION_KEY] = user.pk
+    #######################################request.session[BACKEND_SESSION_KEY] = user.backend
     if hasattr(request, 'user'):
         request.user = user
-    user_logged_in.send(sender=user.__class__, request=request, user=user)
+    #######################################user_logged_in.send(sender=user.__class__, request=request, user=user)
 
+
+
+    ssouser = SSOUser(True)
+
+    ssouser_logged_in.send(sender=ssouser.__class__, request=request, ssouser=ssouser)
+    #request.session['somekey'] = 'test'
+    request.ssouser = ssouser
     if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN):
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
     request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = token_logged_in
@@ -78,3 +93,7 @@ def auth_logout(request):
     #if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN)
         ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
+
+
+    ssouser = SSOUser(False)
+    request.ssouser = ssouser

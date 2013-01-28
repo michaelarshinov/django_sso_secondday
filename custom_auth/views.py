@@ -13,6 +13,7 @@ from django.utils.http import base36_to_int, is_safe_url
 
 from django.core import urlresolvers
 
+from openam_backend_bridge import SSOUser
 import custom_auth
 
 def login(request, template_name='registration/login.html',
@@ -31,20 +32,30 @@ def login(request, template_name='registration/login.html',
     redirect_to = request.REQUEST.get(redirect_field_name, '')
     if request.method == "POST":
         form = authentication_form(data=request.POST)
-        if form.is_valid():
+        print('form.is_valid()=='+str(form.is_valid()))
+        ####if form.is_valid():
+        ###token_to_store_in_cookies = auth_login(request, form.get_user())
+        token_to_store_in_cookies = auth_login(request, form.get_user())
+        if token_to_store_in_cookies:
+            print('is_safe_url(url=redirect_to, host=request.get_host())='+str(is_safe_url(url=redirect_to, host=request.get_host())))
             if not is_safe_url(url=redirect_to, host=request.get_host()):
                 redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
                 #print('!!!!!!!!!! USER  '*20)
-            token_to_store_in_cookies = auth_login(request, form.get_user())
+
+
             #return HttpResponseRedirect('/mainmenu_POST/')
             print('logn===='+redirect_to+'======login')
             response = HttpResponseRedirect(redirect_to)
+            print('token_to_store_in_cookies='+token_to_store_in_cookies)
+
             response.set_cookie(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, token_to_store_in_cookies)
             return response
     else:
         form = authentication_form(request)
 
     current_site = get_current_site(request)
+
+    request.ssouser = SSOUser(True)
 
     context = {
         'form': form,
@@ -81,7 +92,7 @@ def logout(request, next_page=None,
     context = {
         'site': current_site,
         'site_name': current_site.name,
-        'title': _('Logged out')
+        'title': 'Logged out'
     }
     if extra_context is not None:
         context.update(extra_context)

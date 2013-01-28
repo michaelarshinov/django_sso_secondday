@@ -39,7 +39,7 @@ class rest_interface:
         return self._do_get(CMD_REST_LOGOUT, {'subjectid':subject_id})
 
     def do_logging(self, app_id, subject_id, log_name, message):
-        return _do_get(CMD_REST_LOGGING, {
+        return self._do_get(CMD_REST_LOGGING, {
         'appid':app_id,
         'subjectid':subject_id,
         'logname':log_name,
@@ -84,6 +84,16 @@ class rest_interface:
     def isErrorable(self, data):
         try:
             data.index('exception.name')
-            return False
-        except:
             return True
+        except:
+            return False
+
+
+class SSOUser:
+    logged_in = False
+    is_authenticated = True
+    def __init__(self, logged_in):
+        self.logged_in = logged_in
+
+    def is_authenticated(self):
+        return self.logged_in

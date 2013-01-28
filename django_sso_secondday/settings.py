@@ -106,7 +106,7 @@ ROOT_URLCONF = 'django_sso_secondday.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'django_sso_secondday.wsgi.application'
 
-TEMPLATE_DIRS = ('/home/marshynov/PycharmProjects/django_sso_secondday/templates',)
+TEMPLATE_DIRS = ('/root/PycharmProjects/django_sso_secondday/templates',)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -120,7 +120,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'appname',
-    'custom_auth'
+    'custom_auth',
 )
 
 # A sample logging configuration. The only tangible logging

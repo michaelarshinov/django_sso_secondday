@@ -10,8 +10,13 @@
     {% block sidebar %}
         <ul>
             <li><a href="/mainmenu">Home</a></li>
-
             {% if user.is_authenticated %}
+                authenticated
+            {% else %}
+                is not authenticated
+            {% endif %}
+
+            {% if messages.request.ssouser.logged_in %}
                 <li><a href="/accounts/logout">Logout</a></li>
             {% else %}
                 <li><a href="/accounts/login">Login</a></li>
