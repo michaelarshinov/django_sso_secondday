@@ -94,13 +94,6 @@ class rest_interface:
         except:
             return False
 
-    def save_token(self,response, token_name, token_value, days_expire = 7):
-        if days_expire is None:
-            max_age = 365*24*60*60
-        else:
-            max_age = days_expire * 24 * 60 * 60
-        expires = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age), "%a, %d-%b-%Y %H:%M:%S GMT")
-        response.set_cookie(token_name, token_value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
 
 class SSOUser:
     logged_in = False

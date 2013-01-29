@@ -16,6 +16,20 @@ from . import OPEN_AM_SERVER_URL
 from openam_backend_bridge import SSOUser
 import custom_auth
 from django_sso_secondday.settings import LOGIN_REDIRECT_TEMPLATE
+import datetime
+
+def save_token(response, token_name, token_value, days_expire = 7):
+    if days_expire is None:
+        max_age = 365*24*60*60
+    else:
+        max_age = days_expire * 24 * 60 * 60
+    expires = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age), "%a, %d-%b-%Y %H:%M:%S GMT")
+    response.set_cookie(token_name, token_value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
+
+def save_user(request):
+    ssouser = SSOUser(True)
+    request.ssouser = ssouser
+
 def login(request, template_name='registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
@@ -24,47 +38,30 @@ def login(request, template_name='registration/login.html',
 
     is taken from       django.contrib.auth.views.py
 
-
     Displays the login form and handles the login action.
 
     """
-
     redirect_to = request.REQUEST.get(redirect_field_name, '')
     if request.method == "POST":
         form = authentication_form(data=request.POST)
-        print('form.is_valid()=='+str(form.is_valid()))
-        ####if form.is_valid():
-        ###token_to_store_in_cookies = auth_login(request, form.get_user())
-
-
-
         token_to_store_in_cookies = auth_login(request, form.get_user())
         if token_to_store_in_cookies:
-            print('is_safe_url(url=redirect_to, host=request.get_host())='+str(is_safe_url(url=redirect_to, host=request.get_host())))
             if not is_safe_url(url=redirect_to, host=request.get_host()):
                 redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-                #print('!!!!!!!!!! USER  '*20)
 
-            #return HttpResponseRedirect('/mainmenu_POST/')
-            print('logn===='+redirect_to+'======login')
             response = HttpResponseRedirect(redirect_to)
-            print('token_to_store_in_cookies='+token_to_store_in_cookies)
 
-            response.set_cookie(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, token_to_store_in_cookies)
+            save_user(request)
+            save_token(response, custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, token_to_store_in_cookies)
 
-
-
-            res = read_token_from_cookie_check_fill_out_ssouser_response(token_to_store_in_cookies,response)
+            #res = read_token_from_cookie_check_fill_out_ssouser_response(token_to_store_in_cookies,response)
             return response
     else:
         form = authentication_form(request)
 
     current_site = get_current_site(request)
 
-    # place to check 'djnago_sso_secondday_token_id' and set 'ssouser' in case of need
-    # request.ssouser = SSOUser(True)
-
-    can_be_redirected = read_token_from_cookie_then_check_and_fill_out_ssouser_object(request)
+    ###can_be_redirected = read_token_from_cookie_then_check_and_fill_out_ssouser_object(request)
     """
         if can_be_redirected and bool(can_be_redirected):
             if redirect_to or len(redirect_to) > 0:
@@ -80,21 +77,17 @@ def login(request, template_name='registration/login.html',
         'site_name': current_site.name,
         }
 
-    #if extra_context is not None:
-    #    context.update(extra_context)
+    if extra_context is not None:
+        context.update(extra_context)
     return TemplateResponse(request, template_name, context,
         current_app=current_app)
 
-def remove_token_from_cookies(request):
-    del request.COOKIES[custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN]
-
+"""
 def read_token_from_cookie_then_check_and_fill_out_ssouser_object(request):
     token = request.COOKIES.get(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, None)
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
     authorized = ri.is_token_valid(token)
     request.ssouser =  SSOUser(authorized)
-    #if not bool(authorized):
-    #    remove_token_from_cookies(request)
     return authorized
 
 def read_token_from_cookie_check_fill_out_ssouser_response(token, response):
@@ -102,14 +95,13 @@ def read_token_from_cookie_check_fill_out_ssouser_response(token, response):
     authorized = ri.is_token_valid(token)
     response.ssouser = SSOUser(authorized)
     return authorized
-
+"""
 def logout(request, next_page=None,
            template_name='registration/logged_out.html',
            redirect_field_name=REDIRECT_FIELD_NAME,
            current_app=None, extra_context=None):
     """
     is taken from       django.contrib.auth.views.py
-
 
     Logs out the user and displays 'You are logged out' message.
     """
@@ -123,7 +115,9 @@ def logout(request, next_page=None,
 
     if next_page:
         # Redirect to this page until the session has been cleared.
-        return HttpResponseRedirect(next_page)
+        response = HttpResponseRedirect(next_page)
+        response.delete_cookie(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN)
+        return response
 
     current_site = get_current_site(request)
     context = {
@@ -131,17 +125,18 @@ def logout(request, next_page=None,
         'site_name': current_site.name,
         'title': 'Logged out'
     }
-    if extra_context is not None:
-        context.update(extra_context)
-    return TemplateResponse(request, template_name, context,
-        current_app=current_app)
+
+    #if extra_context is not None:
+    #    context.update(extra_context)
+
+    response = TemplateResponse(request, template_name, context, current_app=current_app)
+    response.delete_cookie(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN)
+    return response
 
 def resolve_url(to, *args, **kwargs):
     """
 
     is taken from           django.shortcuts.__init__.py
-
-
     Return a URL appropriate for the arguments passed.
 
     The arguments could be:

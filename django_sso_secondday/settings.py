@@ -107,8 +107,8 @@ MIDDLEWARE_CLASSES = (
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
-# MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
-MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+#MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 # 'django.contrib.messages.storage.fallback.FallbackStorage' by default
 
 ROOT_URLCONF = 'django_sso_secondday.urls'

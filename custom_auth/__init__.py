@@ -28,7 +28,6 @@ def auth_login(request, user):
 
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
-    #token_logged_in = ri.do_login('messi', 'password')
     token_logged_in = ri.do_login(request.REQUEST.get('username'),request.REQUEST.get('password'))
 
     if (ri.isErrorable(token_logged_in)):
@@ -37,6 +36,8 @@ def auth_login(request, user):
         return None
 
     token_logged_in = ri.clear_token(token_logged_in)
+
+    """
     if user is None:
         user = request.user
         # TODO: It would be nice to support different login methods, like signed cookies.
@@ -48,23 +49,24 @@ def auth_login(request, user):
             request.session.flush()
     else:
         request.session.cycle_key()
-    #######################################request.session[SESSION_KEY] = user.pk
-    #######################################request.session[BACKEND_SESSION_KEY] = user.backend
-    #######################################if hasattr(request, 'user'):
-    #######################################    request.user = user
-    #######################################user_logged_in.send(sender=user.__class__, request=request, user=user)
 
-    ssouser = SSOUser(True)
+    """
+
+    #ssouser = SSOUser(True)
+
 
     ###########ssouser_logged_in.send(sender=ssouser.__class__, request=request, ssouser=ssouser)
-
     #request.session['somekey'] = 'test'
+
     """
     request.ssouser = ssouser
     if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN):
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
     request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = token_logged_in
     """
+
+    #ri.save_token()
+
     return token_logged_in
 
 
@@ -75,8 +77,6 @@ def auth_logout(request):
     Removes the authenticated user's ID from the request and flushes their
     session data.
     """
-    # Dispatch the signal before the user is logged out so the receivers have a
-    # chance to find out *who* logged out.
 
     """
     user = getattr(request, 'user', None)
@@ -92,11 +92,12 @@ def auth_logout(request):
     """
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
-    if OPENAM_COOKIE_NAME_FOR_TOKEN in request.COOKIES:
-    #    ri.do_logout(subject_id=OPENAM_COOKIE_NAME_FOR_TOKEN)
-    #if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN)
-        ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
-        del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
-        request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = 'logged_out'
-    ssouser = SSOUser(False)
-    request.ssouser = ssouser
+    #if OPENAM_COOKIE_NAME_FOR_TOKEN in request.COOKIES:
+        #ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
+        #del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
+        #request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = 'logged_out'
+
+
+
+    ##ssouser = SSOUser(False)
+    ##request.ssouser = ssouser
