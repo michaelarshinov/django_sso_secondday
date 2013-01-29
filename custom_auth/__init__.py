@@ -50,20 +50,21 @@ def auth_login(request, user):
         request.session.cycle_key()
     #######################################request.session[SESSION_KEY] = user.pk
     #######################################request.session[BACKEND_SESSION_KEY] = user.backend
-    if hasattr(request, 'user'):
-        request.user = user
+    #######################################if hasattr(request, 'user'):
+    #######################################    request.user = user
     #######################################user_logged_in.send(sender=user.__class__, request=request, user=user)
-
-
 
     ssouser = SSOUser(True)
 
-    ssouser_logged_in.send(sender=ssouser.__class__, request=request, ssouser=ssouser)
+    ###########ssouser_logged_in.send(sender=ssouser.__class__, request=request, ssouser=ssouser)
+
     #request.session['somekey'] = 'test'
+    """
     request.ssouser = ssouser
     if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN):
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
     request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = token_logged_in
+    """
     return token_logged_in
 
 
@@ -76,16 +77,19 @@ def auth_logout(request):
     """
     # Dispatch the signal before the user is logged out so the receivers have a
     # chance to find out *who* logged out.
+
+    """
     user = getattr(request, 'user', None)
     if hasattr(user, 'is_authenticated') and not user.is_authenticated():
         user = None
     user_logged_out.send(sender=user.__class__, request=request, user=user)
-
+    """
     request.session.flush()
+    """
     if hasattr(request, 'user'):
         from django.contrib.auth.models import AnonymousUser
         request.user = AnonymousUser()
-
+    """
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
     if OPENAM_COOKIE_NAME_FOR_TOKEN in request.COOKIES:
@@ -93,5 +97,6 @@ def auth_logout(request):
     #if request.COOKIES.has_key(OPENAM_COOKIE_NAME_FOR_TOKEN)
         ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
         del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
+        request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = 'logged_out'
     ssouser = SSOUser(False)
     request.ssouser = ssouser

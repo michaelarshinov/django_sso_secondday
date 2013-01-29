@@ -9,9 +9,9 @@
 <div id="content">
     {% block content %}
         Welcome!
-    is_authenticated : {{ is_auth }}
+    stat_info token : {{ messages.request.COOKIES }}
 
-    {% if user.is_authenticated %}
+    {% if messages.request.ssouser.logged_in %}
         <p>Welcome, {{ user.username }}. Thanks for logging in.</p>
     {% else %}
         <p>Welcome, new user. Please log in.</p>

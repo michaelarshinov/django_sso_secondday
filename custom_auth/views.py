@@ -15,7 +15,7 @@ from django.core import urlresolvers
 from . import OPEN_AM_SERVER_URL
 from openam_backend_bridge import SSOUser
 import custom_auth
-
+from django_sso_secondday.settings import LOGIN_REDIRECT_TEMPLATE
 def login(request, template_name='registration/login.html',
           redirect_field_name=REDIRECT_FIELD_NAME,
           authentication_form=AuthenticationForm,
@@ -35,6 +35,9 @@ def login(request, template_name='registration/login.html',
         print('form.is_valid()=='+str(form.is_valid()))
         ####if form.is_valid():
         ###token_to_store_in_cookies = auth_login(request, form.get_user())
+
+
+
         token_to_store_in_cookies = auth_login(request, form.get_user())
         if token_to_store_in_cookies:
             print('is_safe_url(url=redirect_to, host=request.get_host())='+str(is_safe_url(url=redirect_to, host=request.get_host())))
@@ -48,6 +51,10 @@ def login(request, template_name='registration/login.html',
             print('token_to_store_in_cookies='+token_to_store_in_cookies)
 
             response.set_cookie(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, token_to_store_in_cookies)
+
+
+
+            res = read_token_from_cookie_check_fill_out_ssouser_response(token_to_store_in_cookies,response)
             return response
     else:
         form = authentication_form(request)
@@ -58,11 +65,13 @@ def login(request, template_name='registration/login.html',
     # request.ssouser = SSOUser(True)
 
     can_be_redirected = read_token_from_cookie_then_check_and_fill_out_ssouser_object(request)
-
-    if can_be_redirected and bool(can_be_redirected):
-        return HttpResponseRedirect(redirect_to)
-        #template_name = 'mainmenu.html'
-
+    """
+        if can_be_redirected and bool(can_be_redirected):
+            if redirect_to or len(redirect_to) > 0:
+            #    redirect_to = LOGIN_REDIRECT_TEMPLATE
+                return HttpResponseRedirect(redirect_to)
+            #template_name = 'mainmenu.html'
+    """
 
     context = {
         'form': form,
@@ -71,16 +80,27 @@ def login(request, template_name='registration/login.html',
         'site_name': current_site.name,
         }
 
-    if extra_context is not None:
-        context.update(extra_context)
+    #if extra_context is not None:
+    #    context.update(extra_context)
     return TemplateResponse(request, template_name, context,
         current_app=current_app)
+
+def remove_token_from_cookies(request):
+    del request.COOKIES[custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN]
 
 def read_token_from_cookie_then_check_and_fill_out_ssouser_object(request):
     token = request.COOKIES.get(custom_auth.OPENAM_COOKIE_NAME_FOR_TOKEN, None)
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
     authorized = ri.is_token_valid(token)
     request.ssouser =  SSOUser(authorized)
+    #if not bool(authorized):
+    #    remove_token_from_cookies(request)
+    return authorized
+
+def read_token_from_cookie_check_fill_out_ssouser_response(token, response):
+    ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
+    authorized = ri.is_token_valid(token)
+    response.ssouser = SSOUser(authorized)
     return authorized
 
 def logout(request, next_page=None,

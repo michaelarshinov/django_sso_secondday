@@ -7,6 +7,10 @@
 
 <body>
 <div id="sidebar">
+
+    base token : {{ messages.request.COOKIES }}
+
+
     {% block sidebar %}
         <ul>
             <li><a href="/mainmenu">Home</a></li>
@@ -21,6 +25,11 @@
             {% else %}
                 <li><a href="/accounts/login">Login</a></li>
             {% endif %}
+
+
+
+
+            <li><a href="/accounts/logout">Forced Logout</a></li>
         </ul>
     {% endblock %}
 </div>

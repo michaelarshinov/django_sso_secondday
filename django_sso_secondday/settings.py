@@ -102,7 +102,13 @@ MIDDLEWARE_CLASSES = (
 )
 
 
-MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SESSION_ENGINE
+# SESSION_ENGINE  by default: django.contrib.sessions.backends.db
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+# MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 # 'django.contrib.messages.storage.fallback.FallbackStorage' by default
 
 ROOT_URLCONF = 'django_sso_secondday.urls'
@@ -156,3 +162,4 @@ LOGGING = {
     }
 }
 LOGIN_REDIRECT_URL='/mainmenu/'
+LOGIN_REDIRECT_TEMPLATE = 'mainmenu.html'

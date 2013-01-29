@@ -8,6 +8,8 @@
 
 <div id="content">
     {% block content %}
+        mainmenu token : {{ messages.request.COOKIES }}
+
         Mainmenu
         <a href="/statinfo/">stat info</a>
     {% endblock %}
