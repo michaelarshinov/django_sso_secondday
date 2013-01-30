@@ -22,7 +22,7 @@ def stat_info(request):
     return render_to_response('stat_info.html',
        # {'is_auth':request.user.is_authenticated()},
         {'is_auth':'TRUE'},
-        context_instancse=RequestContext(request))
+        context_instance=RequestContext(request))
 
 @sso_login_required
 def mainmenu(request):
