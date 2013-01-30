@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import Context, loader, RequestContext
 
 from django.shortcuts import render_to_response
-
+from custom_auth.contrib_auth_decorators import sso_login_required
 #https://docs.djangoproject.com/en/1.2/topics/auth/#other-authentication-sources
 #http://stackoverflow.com/questions/9825630/login-required-decorator-in-django-1-1-and-template-name
 
@@ -22,9 +22,9 @@ def stat_info(request):
     return render_to_response('stat_info.html',
        # {'is_auth':request.user.is_authenticated()},
         {'is_auth':'TRUE'},
-        context_instance=RequestContext(request))
+        context_instancse=RequestContext(request))
 
-#@login_required
+@sso_login_required
 def mainmenu(request):
     return render_to_response('mainmenu.html',{},
         context_instance=RequestContext(request))
