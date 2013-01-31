@@ -116,7 +116,7 @@ ROOT_URLCONF = 'django_sso_secondday.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'django_sso_secondday.wsgi.application'
 
-TEMPLATE_DIRS = ('/home/marshynov/PycharmProjects/django_sso_secondday/templates',)
+TEMPLATE_DIRS = ('/root/PycharmProjects/django_sso_secondday/templates',)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -163,3 +163,5 @@ LOGGING = {
 }
 LOGIN_REDIRECT_URL='/mainmenu/'
 LOGIN_REDIRECT_TEMPLATE = 'mainmenu.html'
+
+#SESSION_COOKIE_SECURE = True  to use this run wsgi over https - https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/

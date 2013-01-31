@@ -93,7 +93,10 @@ def auth_logout(request):
     ri = rest_interface(opensso_url=OPEN_AM_SERVER_URL)
 
     if OPENAM_COOKIE_NAME_FOR_TOKEN in request.COOKIES:
-        ri.do_logout(subject_id=request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
+        unsigned_token = request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
+        print('logout: token ='+request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN])
+        print('logout: unsigned_token ='+unsigned_token)
+        ri.do_logout(subject_id=unsigned_token)
         #del request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN]
         #request.COOKIES[OPENAM_COOKIE_NAME_FOR_TOKEN] = 'logged_out'
     ##ssouser = SSOUser(False)

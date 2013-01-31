@@ -17,6 +17,7 @@ from openam_backend_bridge import SSOUser
 import custom_auth
 from django_sso_secondday.settings import LOGIN_REDIRECT_TEMPLATE
 import datetime
+from custom_auth.signer_unsigner import signer_unsigner_class
 
 def save_token(response, token_name, token_value, days_expire = 7):
     if days_expire is None:
@@ -24,7 +25,11 @@ def save_token(response, token_name, token_value, days_expire = 7):
     else:
         max_age = days_expire * 24 * 60 * 60
     expires = datetime.datetime.strftime(datetime.datetime.utcnow() + datetime.timedelta(seconds=max_age), "%a, %d-%b-%Y %H:%M:%S GMT")
-    response.set_cookie(token_name, token_value, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
+    signer = signer_unsigner_class()
+    token_value_signed = signer.sign_and_return_back_signed_value(token_name)
+    print('==save_token: token: '+token_value)
+    print('==save_token: signed_token: '+token_value_signed)
+    response.set_cookie(token_name, token_value_signed, max_age=max_age, expires=expires, domain=settings.SESSION_COOKIE_DOMAIN, secure=settings.SESSION_COOKIE_SECURE or None)
 
 def save_user(request):
     ssouser = SSOUser(True)
